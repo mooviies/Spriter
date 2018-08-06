@@ -3,6 +3,7 @@
 
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGraphicsScene>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -93,8 +94,57 @@ void MainWindow::tabChanged(int index)
 void MainWindow::generateOutput()
 {
     ui->tabWidgetOutput->clear();
+    QList<QImage*> _images;
+    QList<QGraphicsScene*> _scenes;
+    QList<int> _currentId;
 
+    for(int i = 0; i < ui->tabWidgetInput->count(); i++)
+    {
+        const QImage& image = _inputTabs[i]->getImage();
+        const QMap<int, QSet<QPoint>>& selection = _inputTabs[i]->getCurrentGrid().getSelection();
 
+        int cellWidth = _inputTabs[i]->getCurrentGrid().getCellWidth();
+        int cellHeight = _inputTabs[i]->getCurrentGrid().getCellHeight();
+        int nbRows = ui->spinBoxRows->value();
+        int nbColumns = ui->spinBoxColumns->value();
+
+        foreach(int id, selection.keys())
+        {
+            while(_images.count() <= id)
+            {
+                _images.append(nullptr);
+                _scenes.append(nullptr);
+                _currentId.append(0);
+            }
+            if(_images[id] == nullptr)
+            {
+                _images[id] = new QImage(cellWidth * nbColumns, cellHeight * nbRows, QImage::Format_ARGB32);
+                _scenes[id] = new QGraphicsScene();
+
+                ui->tabWidgetOutput->addTab()
+            }
+
+            foreach(QPoint point, selection[id])
+            {
+                int toId = _currentId[id]++;
+                int toRow = toId % nbRows;
+                int toColumn = toId / nbRows;
+
+                int startOrigX = point.y() * cellWidth;
+                int startOrigY = point.x() * cellHeight;
+                int startDestX = toColumn * cellWidth;
+                int startDestY = toRow * cellHeight;
+
+                for(int i = 0; i < cellWidth; i++)
+                {
+                    for(int j = 0; j < cellHeight; j++)
+                    {
+                        _images[id]->setPixel(i + startDestX, j + startDestY, image.pixel(i + startOrigX, j + startOrigY));
+                    }
+                }
+            }
+        }
+    }
 }
 
 void MainWindow::exportOutput()

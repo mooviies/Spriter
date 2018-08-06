@@ -12,6 +12,8 @@ public:
     Grid(const QRectF& rect, int rows = 1, int columns = 1);
     ~Grid();
 
+    int getCellWidth() const { return _cellWidth; }
+    int getCellHeight() const { return _cellHeight; }
     int getNbRows() const { return _rows; }
     int getNbColumns() const { return _columns; }
 
