@@ -20,15 +20,13 @@ public:
     void resize(const QRectF& rect);
     void modify(int rows, int columns);
 
-    const QMap<int, QSet<QPoint>>& getSelection() const;
+    const QVector<QVector<int>>& getSelection() const;
     bool selected(int id, int r, int c) const;
     bool selected(int id, const QPoint& point) const;
 
-    void select(const QMap<int, QSet<QPoint>>& selection);
+    void select(const QVector<QVector<int>>& selection);
     void select(int id, bool isSelected, int r, int c);
     QPoint select(int id, bool isSelected, const QPoint& point);
-
-    QPoint toggle(int id, const QPoint& point);
 
     void clear();
     void clear(int id);
@@ -38,6 +36,9 @@ public:
 protected:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+private:
+    int getId(int r, int c) const { return r * _columns + c; }
 
 public:
     QPoint mousePosToGridPos(const QPoint& point) const;
@@ -50,7 +51,7 @@ private:
     int _rows;
     int _currentId;
 
-    QMap<int, QSet<QPoint>> _selection;
+    QVector<QVector<int>> _selection;
 };
 
 inline uint qHash(const QPoint& point)

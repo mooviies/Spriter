@@ -39,6 +39,11 @@ private:
     QList<InputTab*> _inputTabs;
     bool _manualExport;
 
+    QList<QImage*> _images;
+    QList<QGraphicsScene*> _scenes;
+    QList<QGraphicsPixmapItem*> _pixmap;
+    QList<int> _currentId;
+
     const QString APPLICATION_IMAGE_PATH;
 };
 

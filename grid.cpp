@@ -24,69 +24,55 @@ Grid::~Grid()
 
 }
 
-const QMap<int, QSet<QPoint>>& Grid::getSelection() const
+const QVector<QVector<int>>& Grid::getSelection() const
 {
     return _selection;
 }
 
-bool Grid::selected(int id, int r, int c) const
+bool Grid::selected(int outputId, int r, int c) const
 {
-    if(!_selection.contains(id))
+    if(_selection.count() <= outputId)
         return false;
 
-    return _selection[id].contains(QPoint(r, c));
+    return _selection[outputId].contains(getId(r, c));
 }
 
-bool Grid::selected(int id, const QPoint& point) const
+bool Grid::selected(int outputId, const QPoint& point) const
 {
     QPoint cell = mousePosToGridPos(point);
-    return selected(id, cell.x(), cell.y());
+    return selected(outputId, cell.x(), cell.y());
 }
 
-void Grid::select(const QMap<int, QSet<QPoint>>& selection)
+void Grid::select(const QVector<QVector<int>>& selection)
 {
     _selection = selection;
 }
 
-void Grid::select(int id, bool isSelected, int r, int c)
+void Grid::select(int outputId, bool isSelected, int r, int c)
 {
-    QPoint point = QPoint(r, c);
+    int imageId = getId(r, c);
     if(isSelected)
     {
-        if(!_selection.contains(id) || !_selection[id].contains(point))
-            _selection[id].insert(point);
+        if(_selection.count() <= outputId)
+            _selection.resize(outputId + 1);
+
+        if(!_selection[outputId].contains(imageId))
+            _selection[outputId].append(imageId);
     }
     else
     {
-        if(!_selection.contains(id))
+        if(_selection.count() <= outputId)
             return;
 
-        if(_selection[id].contains(point))
-            _selection[id].remove(point);
-
-        if(_selection[id].count() == 0)
-            _selection.remove(id);
+        if(_selection[outputId].contains(imageId))
+            _selection[outputId].remove(imageId);
     }
 }
 
-QPoint Grid::select(int id, bool isSelected, const QPoint& point)
+QPoint Grid::select(int outputId, bool isSelected, const QPoint& point)
 {
     QPoint cell = mousePosToGridPos(point);
-    select(id, isSelected, cell.x(), cell.y());
-    return cell;
-}
-
-QPoint Grid::toggle(int id, const QPoint& point)
-{
-    QPoint cell = mousePosToGridPos(point);
-
-    bool isSelected;
-    if(!_selection.contains(id))
-        isSelected = true;
-    else
-        isSelected = !_selection[id].contains(cell);
-
-    select(id, isSelected, cell.x(), cell.y());
+    select(outputId, isSelected, cell.x(), cell.y());
     return cell;
 }
 
@@ -95,10 +81,10 @@ void Grid::clear()
     _selection.clear();
 }
 
-void Grid::clear(int id)
+void Grid::clear(int outputId)
 {
-    if(_selection.contains(id))
-        _selection[id].clear();
+    if(_selection.count() > outputId)
+        _selection[outputId].clear();
 }
 
 QRectF Grid::boundingRect() const
@@ -123,13 +109,14 @@ void Grid::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
                 painter->drawLine(QLine(j * _cellWidth, 0, j * _cellWidth, static_cast<int>(_boundingRect.height())));
             }
 
-            foreach(int id, _selection.keys())
+            int imageId = getId(i, j);
+            for(int outputId = 0; outputId < _selection.length(); outputId++)
             {
-                if(_selection[id].contains(QPoint(i, j)))
+                if(_selection[outputId].contains(imageId))
                 {
-                    painter->setBrush(qtColors[id % 15]);
+                    painter->setBrush(qtColors[outputId % 15]);
 
-                    if(id == _currentId)
+                    if(outputId == _currentId)
                         painter->setOpacity(0.3);
                     else
                         painter->setOpacity(0.9);
@@ -138,6 +125,7 @@ void Grid::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
                     painter->setBrush(Qt::black);
                     painter->setOpacity(1);
+                    break;
                 }
             }
         }
