@@ -4,6 +4,9 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGraphicsScene>
+#include <QLayout>
+#include <QGraphicsPixmapItem>
+#include <QPixmap>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -96,15 +99,16 @@ void MainWindow::generateOutput()
     ui->tabWidgetOutput->clear();
     QList<QImage*> _images;
     QList<QGraphicsScene*> _scenes;
+    QList<QGraphicsPixmapItem*> _pixmap;
     QList<int> _currentId;
 
-    for(int i = 0; i < ui->tabWidgetInput->count(); i++)
+    for(int k = 0; k < ui->tabWidgetInput->count(); k++)
     {
-        const QImage& image = _inputTabs[i]->getImage();
-        const QMap<int, QSet<QPoint>>& selection = _inputTabs[i]->getCurrentGrid().getSelection();
+        const QImage& image = _inputTabs[k]->getImage();
+        const QMap<int, QSet<QPoint>>& selection = _inputTabs[k]->getCurrentGrid().getSelection();
 
-        int cellWidth = _inputTabs[i]->getCurrentGrid().getCellWidth();
-        int cellHeight = _inputTabs[i]->getCurrentGrid().getCellHeight();
+        int cellWidth = _inputTabs[k]->getCurrentGrid().getCellWidth();
+        int cellHeight = _inputTabs[k]->getCurrentGrid().getCellHeight();
         int nbRows = ui->spinBoxRows->value();
         int nbColumns = ui->spinBoxColumns->value();
 
@@ -114,21 +118,31 @@ void MainWindow::generateOutput()
             {
                 _images.append(nullptr);
                 _scenes.append(nullptr);
+                _pixmap.append(new QGraphicsPixmapItem());
                 _currentId.append(0);
             }
             if(_images[id] == nullptr)
             {
                 _images[id] = new QImage(cellWidth * nbColumns, cellHeight * nbRows, QImage::Format_ARGB32);
                 _scenes[id] = new QGraphicsScene();
+                QWidget* widget = new QWidget();
+                QVBoxLayout* layout = new QVBoxLayout();
+                widget->setLayout(layout);
+                QGraphicsView* graphicView = new QGraphicsView();
+                graphicView->setScene(_scenes[id]);
+                _scenes[id]->addItem(_pixmap[id]);
+                layout->addWidget(graphicView);
+                graphicView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                graphicView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-                ui->tabWidgetOutput->addTab()
+                ui->tabWidgetOutput->addTab(widget, tr("Output ") + QString::number(id));
             }
 
             foreach(QPoint point, selection[id])
             {
                 int toId = _currentId[id]++;
-                int toRow = toId % nbRows;
-                int toColumn = toId / nbRows;
+                int toColumn = toId % nbColumns;
+                int toRow = toId / nbColumns;
 
                 int startOrigX = point.y() * cellWidth;
                 int startOrigY = point.x() * cellHeight;
@@ -142,6 +156,11 @@ void MainWindow::generateOutput()
                         _images[id]->setPixel(i + startDestX, j + startDestY, image.pixel(i + startOrigX, j + startOrigY));
                     }
                 }
+
+                _pixmap[id]->setPixmap(QPixmap::fromImage(*_images[id]));
+                _scenes[id]->views()[0]->fitInView(_pixmap[id], Qt::KeepAspectRatio);
+                _scenes[id]->views()[0]->centerOn(0, 0);
+                _scenes[id]->update();
             }
         }
     }
