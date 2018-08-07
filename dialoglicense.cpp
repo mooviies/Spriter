@@ -19,14 +19,17 @@
     Sources Repository : https://github.com/mooviies/Spriter
  */
 
-#include "mainwindow.h"
-#include <QApplication>
+#include "dialoglicense.h"
+#include "ui_dialoglicense.h"
 
-int main(int argc, char *argv[])
+DialogLicense::DialogLicense(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::DialogLicense)
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    ui->setupUi(this);
+}
 
-    return a.exec();
+DialogLicense::~DialogLicense()
+{
+    delete ui;
 }

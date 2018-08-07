@@ -19,14 +19,25 @@
     Sources Repository : https://github.com/mooviies/Spriter
  */
 
-#include "mainwindow.h"
-#include <QApplication>
+#ifndef DIALOGLICENSE_H
+#define DIALOGLICENSE_H
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+#include <QDialog>
 
-    return a.exec();
+namespace Ui {
+class DialogLicense;
 }
+
+class DialogLicense : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit DialogLicense(QWidget *parent = nullptr);
+    ~DialogLicense();
+
+private:
+    Ui::DialogLicense *ui;
+};
+
+#endif // DIALOGLICENSE_H

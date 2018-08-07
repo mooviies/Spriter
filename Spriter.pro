@@ -6,7 +6,7 @@
 
 QT       += core gui widgets
 
-TARGET = SpriteSheetSplitter
+TARGET = Spriter
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -30,15 +30,18 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     inputtab.cpp \
-    grid.cpp
+    grid.cpp \
+    dialoglicense.cpp
 
 HEADERS += \
         mainwindow.h \
     inputtab.h \
-    grid.h
+    grid.h \
+    dialoglicense.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    dialoglicense.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

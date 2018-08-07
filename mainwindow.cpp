@@ -1,3 +1,24 @@
+/*
+    Spriter - Spritesheet cutting utility software
+    Copyright (C) 2018  mooviies
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+    Software Website : http://mooviies.com
+    Sources Repository : https://github.com/mooviies/Spriter
+ */
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -7,6 +28,9 @@
 #include <QLayout>
 #include <QGraphicsPixmapItem>
 #include <QPixmap>
+#include <QDesktopServices>
+
+#include "dialoglicense.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -27,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->spinBoxColumns, SIGNAL(valueChanged(int)), this, SLOT(generateOutput()));
     connect(ui->spinBoxRows, SIGNAL(valueChanged(int)), this, SLOT(generateOutput()));
     connect(ui->pushButtonExport, SIGNAL(clicked()), this, SLOT(exportOutput()));
+    connect(ui->actionLicense, SIGNAL(triggered()), this, SLOT(showLicense()));
+    connect(ui->actionSource, SIGNAL(triggered()), this, SLOT(showSource()));
 
     QCoreApplication::setOrganizationDomain("mooviies.com");
     QCoreApplication::setOrganizationName("mooviies");
@@ -228,6 +254,17 @@ void MainWindow::resizeEvent (QResizeEvent * event)
         _inputTabs[i]->updateImageView();
 
     Q_UNUSED(event);
+}
+
+void MainWindow::showLicense()
+{
+    DialogLicense license(this);
+    license.exec();
+}
+
+void MainWindow::showSource()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/mooviies/Spriter"));
 }
 
 void MainWindow::loadSettings()
