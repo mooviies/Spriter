@@ -51,10 +51,15 @@ public slots:
 protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
+    void drawForeground(QPainter *painter, const QRectF &rect);
+
+public slots:
+    void updateImageView();
 
 private slots:
     void setCurrentId(int id);
     void setAutomaticButton(bool automatic);
+    void setManualButton(bool manual);
     void clear();
     void clearAll();
     void deleteSelf();
@@ -91,6 +96,7 @@ private:
     Grid _gridAutomatic;
 
     bool _currentSelectSetting;
+    bool _initialFitInView;
 };
 
 #endif // INPUTTAB_H

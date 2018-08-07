@@ -28,6 +28,9 @@ public slots:
     void generateOutput();
     void exportOutput();
 
+protected:
+    void resizeEvent (QResizeEvent * event);
+
 private:
     void loadSettings();
     void saveSettings();

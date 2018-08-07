@@ -6,16 +6,18 @@
 #include <QLabel>
 #include <QFileInfo>
 #include <QScrollBar>
+#include <QMessageBox>
 
 #include "mainwindow.h"
 
-InputTab::InputTab(QMainWindow *mainWindow, QTabWidget *parent, QString filename) : QGraphicsScene(), _mainWindow(mainWindow), _parent(parent), _filename(filename), _spriteSheet(filename)
+InputTab::InputTab(QMainWindow *mainWindow, QTabWidget *parent, QString filename) :
+    QGraphicsScene(), _mainWindow(mainWindow), _parent(parent), _filename(filename), _spriteSheet(filename), _initialFitInView(false)
 {
     setUI(parent);
+    reloadImage();
     _graphicView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     _graphicView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     addItem(&_spriteSheetItem);
-    reloadImage();
 
     _gridManual.resize(_spriteSheetItem.boundingRect());
     addItem(&_gridManual);
@@ -104,6 +106,26 @@ void InputTab::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     update();
 }
 
+void InputTab::drawForeground(QPainter *painter, const QRectF &rect)
+{
+    if(!_initialFitInView)
+    {
+        updateImageView();
+        _initialFitInView = true;
+    }
+
+    QGraphicsScene::drawForeground(painter, rect);
+}
+
+void InputTab::updateImageView()
+{
+    QRectF rect = _spriteSheet.rect();
+    rect.setHeight(16);
+    _graphicView->fitInView(rect, Qt::KeepAspectRatio);
+    _graphicView->centerOn(0, 0);
+    update();
+}
+
 void InputTab::setCurrentId(int id)
 {
     _gridManual.setCurrentId(id);
@@ -123,6 +145,27 @@ void InputTab::setAutomaticButton(bool automatic)
         _gridAutomatic.setVisible(false);
         _gridManual.setVisible(true);
     }
+}
+
+void InputTab::setManualButton(bool manual)
+{
+    if(manual && _gridAutomatic.getSelection().count() > 0)
+    {
+        QMessageBox::StandardButton reply = QMessageBox::question(_mainWindow, tr("Manual Mode"),
+                                                                  "Do you want to keep the automatic selection for editing?",
+                                                                  QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+        if(reply == QMessageBox::Yes)
+        {
+            _gridManual.select(_gridAutomatic.getSelection());
+        }
+        else if(reply == QMessageBox::Cancel)
+        {
+            return;
+        }
+    }
+
+    setAutomaticButton(!manual);
 }
 
 void InputTab::clear()
@@ -146,9 +189,7 @@ void InputTab::reloadImage()
 {
     _spriteSheet.load(_filename);
     _spriteSheetItem.setPixmap(QPixmap::fromImage(_spriteSheet));
-    _graphicView->fitInView(&_spriteSheetItem, Qt::KeepAspectRatio);
-    _graphicView->centerOn(0, 0);
-    update();
+    updateImageView();
 }
 
 void InputTab::setUI(QTabWidget *parent)
@@ -156,7 +197,7 @@ void InputTab::setUI(QTabWidget *parent)
     QWidget* widget = new QWidget(parent);
     parent->addTab(widget, QFileInfo(_filename).fileName());
 
-    _pushButtonReload = new QPushButton(tr("Reload"));
+    _pushButtonReload = new QPushButton(tr("Refresh"));
     _pushButtonRemove = new QPushButton(tr("Remove"));
     _pushButtonClear = new QPushButton(tr("Clear"));
     _pushButtonClearAll = new QPushButton(tr("ClearAll"));
@@ -224,7 +265,7 @@ void InputTab::setUI(QTabWidget *parent)
     rows->addWidget(_spinBoxRows);
     columns->addWidget(new QLabel(tr("Columns")));
     columns->addWidget(_spinBoxColumns);
-    currentFrame->addWidget(new QLabel(tr("Current Frame")));
+    currentFrame->addWidget(new QLabel(tr("Current Output")));
     currentFrame->addWidget(_spinBoxCurrentFrame);
     offsetRow->addWidget(new QLabel(tr("Row Offset")));
     offsetRow->addWidget(_spinBoxOffsetRow);
@@ -258,6 +299,7 @@ void InputTab::setUI(QTabWidget *parent)
 
     connect(_radioButtonManual, SIGNAL(toggled(bool)), manualFrame, SLOT(setVisible(bool)));
     connect(_radioButtonManual, SIGNAL(toggled(bool)), automaticFrame, SLOT(setHidden(bool)));
+    connect(_radioButtonManual, SIGNAL(clicked(bool)), this, SLOT(setManualButton(bool)));
 
     connect(_spinBoxCurrentFrame, SIGNAL(valueChanged(int)), this, SLOT(setCurrentId(int)));
 

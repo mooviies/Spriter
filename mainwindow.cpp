@@ -222,6 +222,14 @@ void MainWindow::exportOutput()
     }
 }
 
+void MainWindow::resizeEvent (QResizeEvent * event)
+{
+    for(int i = 0; i < _inputTabs.length(); i++)
+        _inputTabs[i]->updateImageView();
+
+    Q_UNUSED(event);
+}
+
 void MainWindow::loadSettings()
 {
     QSettings settings;
