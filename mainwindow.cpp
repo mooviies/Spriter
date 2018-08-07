@@ -12,7 +12,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     _manualExport(false),
-    APPLICATION_IMAGE_PATH("application/image/path")
+    APPLICATION_IMAGE_PATH("application/image/path"),
+    ALL_FILES(tr("All files (*.*)")),
+    PNG_FILE(tr("PNG (*.png)")),
+    TIFF_FILE(tr("TIFF (*.tif)")),
+    JPG_FILE(tr("JPEG (*.jpg *.jpeg)")),
+    BMP_FILE(tr("BMP (*.bmp)")),
+    IMAGE_FILE(ALL_FILES + ";;" + PNG_FILE + ";;" + JPG_FILE + ";;" + TIFF_FILE + ";;" + BMP_FILE)
 {
     ui->setupUi(this);
     connect(ui->pushButtonAdd, SIGNAL(clicked()), this, SLOT(addImages()));
@@ -20,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->tabWidgetMain, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
     connect(ui->spinBoxColumns, SIGNAL(valueChanged(int)), this, SLOT(generateOutput()));
     connect(ui->spinBoxRows, SIGNAL(valueChanged(int)), this, SLOT(generateOutput()));
+    connect(ui->pushButtonExport, SIGNAL(clicked()), this, SLOT(exportOutput()));
 
     QCoreApplication::setOrganizationDomain("mooviies.com");
     QCoreApplication::setOrganizationName("mooviies");
@@ -50,8 +57,8 @@ void MainWindow::addImages()
 
     QString currentPath = _currentPath;
 
-    QString selfilter = tr("PNG (*.png)");
-    QStringList filenames = QFileDialog::getOpenFileNames(this, "Add spritesheet(s)", currentPath, tr("All files (*.*);;PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif);;BMP (*.bmp)"), &selfilter);
+    QString selfilter = PNG_FILE;
+    QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Add spritesheet(s)"), currentPath, IMAGE_FILE, &selfilter);
     if(filenames.isEmpty())
         return;
 
@@ -188,7 +195,31 @@ void MainWindow::generateOutput()
 
 void MainWindow::exportOutput()
 {
+    QString selfilter = PNG_FILE;
+    QString filename = QFileDialog::getSaveFileName(this, tr("Export spritesheet(s)"), _currentPath, IMAGE_FILE, &selfilter);
+    if(filename.isEmpty())
+        return;
 
+    QFileInfo info(filename);
+
+    if(info.suffix() == "")
+    {
+        if(selfilter == TIFF_FILE)
+            filename += ".tif";
+        else if(selfilter == JPG_FILE)
+            filename += ".jpg";
+        else if(selfilter == BMP_FILE)
+            filename += ".bmp";
+        else
+            filename += ".png";
+    }
+
+    info = QFileInfo(filename);
+
+    for(int i = 0; i < _images.length(); i++)
+    {
+        _images[i]->save(info.absoluteDir().absolutePath() + "/" + info.completeBaseName() + "_" + QString::number(i) + "." + info.suffix());
+    }
 }
 
 void MainWindow::loadSettings()

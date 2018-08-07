@@ -39,12 +39,18 @@ private:
     QList<InputTab*> _inputTabs;
     bool _manualExport;
 
-    QList<QImage*> _images;
-    QList<QGraphicsScene*> _scenes;
-    QList<QGraphicsPixmapItem*> _pixmap;
-    QList<int> _currentId;
+    QVector<QImage*> _images;
+    QVector<QGraphicsScene*> _scenes;
+    QVector<QGraphicsPixmapItem*> _pixmap;
+    QVector<int> _currentId;
 
     const QString APPLICATION_IMAGE_PATH;
+    const QString ALL_FILES;
+    const QString PNG_FILE;
+    const QString TIFF_FILE;
+    const QString JPG_FILE;
+    const QString BMP_FILE;
+    const QString IMAGE_FILE;
 };
 
 #endif // MAINWINDOW_H
